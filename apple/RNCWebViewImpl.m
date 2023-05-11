@@ -26,6 +26,41 @@ static NSDictionary* customCertificatesForHost;
 NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
 
 #if !TARGET_OS_OSX
+@interface RNCWKWebView_ : WKWebView
+@property (nonatomic, copy) NSArray<NSDictionary *> * _Nullable menuItems;
+@end
+@implementation RNCWKWebView_
+- (void)evaluateJS:(NSString *)js
+{
+  [self evaluateJavaScript: js completionHandler: ^(id result, NSError *error) {
+    if (error != nil) {
+      RCTLogWarn(@"%@", [NSString stringWithFormat:@"Error evaluating injectedJavaScript: This is possibly due to an unsupported return type. Try adding true to the end of your injectedJavaScript string. %@", error]);
+    }
+  }];
+}
+
+ - (BOOL)canPerformAction:(SEL)action
+               withSender:(id)sender {
+
+//   if (!self.menuItems) {
+//     return YES;
+//   }
+   return NO;
+ }
+
+ - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder API_AVAILABLE(ios(13.0))  {
+     if (@available(iOS 16.0, *)) {
+       if(self.menuItems) {
+         [builder removeMenuForIdentifier:UIMenuLookup];
+       }
+     }
+     [super buildMenuWithBuilder:builder];
+     
+     char const* cString = "window.dispatchEvent(new Event('contextmenuios'));";
+     [self evaluateJS: @(cString)];
+ }
+@end
+
 // runtime trick to remove WKWebView keyboard default toolbar
 // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
 @interface _SwizzleHelperWK : UIView
@@ -71,7 +106,7 @@ UIScrollViewDelegate,
 RCTAutoInsetsProtocol>
 
 #if !TARGET_OS_OSX
-@property (nonatomic, copy) WKWebView *webView;
+@property (nonatomic, copy) RNCWKWebView_ *webView;
 #else
 @property (nonatomic, copy) RNCWKWebView *webView;
 #endif // !TARGET_OS_OSX
@@ -211,11 +246,11 @@ RCTAutoInsetsProtocol>
       UIMenuItem *item = [[UIMenuItem alloc] initWithTitle: menuItemLabel
                                                     action: NSSelectorFromString(sel)];
 
-      [menuControllerItems addObject: item];
+//      [menuControllerItems addObject: item];
     }
 
     menuController.menuItems = menuControllerItems;
-    [menuController setMenuVisible:YES animated:YES];
+    [menuController setMenuVisible:NO animated:YES];
   }
 }
 
@@ -413,7 +448,7 @@ RCTAutoInsetsProtocol>
   if (self.window != nil && _webView == nil) {
     WKWebViewConfiguration *wkWebViewConfig = [self setUpWkWebViewConfig];
 #if !TARGET_OS_OSX
-    _webView = [[WKWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
+    _webView = [[RNCWKWebView_ alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
 #else
     _webView = [[RNCWKWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
 #endif // !TARGET_OS_OSX
@@ -421,6 +456,7 @@ RCTAutoInsetsProtocol>
     [self setBackgroundColor: _savedBackgroundColor];
 #if !TARGET_OS_OSX
     _webView.scrollView.delegate = self;
+    _webView.menuItems = self.menuItems;
 #endif // !TARGET_OS_OSX
     _webView.UIDelegate = self;
     _webView.navigationDelegate = self;
