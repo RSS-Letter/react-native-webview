@@ -49,12 +49,23 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
  }
 
  - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder API_AVAILABLE(ios(13.0))  {
-     if (@available(iOS 16.0, *)) {
-       if(self.menuItems) {
-         [builder removeMenuForIdentifier:UIMenuLookup];
-       }
-     }
-     [super buildMenuWithBuilder:builder];
+//      if (@available(iOS 16.0, *)) {
+//        if(self.menuItems) {
+//          [builder removeMenuForIdentifier:UIMenuLookup];
+//        }
+//      }
+//      [super buildMenuWithBuilder:builder];
+
+     [builder removeMenuForIdentifier:UIMenuLookup];
+     [builder removeMenuForIdentifier:UIMenuSpeech];
+     [builder removeMenuForIdentifier:UIMenuEdit];
+     [builder removeMenuForIdentifier:UIMenuFind];
+     [builder removeMenuForIdentifier:UIMenuFont];
+     [builder removeMenuForIdentifier:UIMenuFile];
+     [builder removeMenuForIdentifier:UIMenuLearn];
+     [builder removeMenuForIdentifier:UIMenuShare];
+     [builder removeMenuForIdentifier:UIMenuUndoRedo];
+     [builder removeMenuForIdentifier:UIMenuPrint];
      
      char const* cString = "window.dispatchEvent(new Event('contextmenuios'));";
      [self evaluateJS: @(cString)];
