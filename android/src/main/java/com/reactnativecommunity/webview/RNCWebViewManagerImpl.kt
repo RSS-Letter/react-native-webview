@@ -29,6 +29,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 
+val invalidCharRegex = "[\\\\/%\"]".toRegex()
 
 class RNCWebViewManagerImpl {
     companion object {
@@ -41,6 +42,7 @@ class RNCWebViewManagerImpl {
     private var mAllowsProtectedMedia = false
     private var mDownloadingMessage: String? = null
     private var mLackPermissionToDownloadMessage: String? = null
+    private var mHasOnOpenWindowEvent = false
 
     private var mUserAgent: String? = null
     private var mUserAgentWithApplicationName: String? = null
@@ -97,7 +99,11 @@ class RNCWebViewManagerImpl {
                 Log.w(TAG, "Unsupported URI, aborting download", e)
                 return@DownloadListener
             }
-            val fileName = URLUtil.guessFileName(url, contentDisposition, mimetype)
+            var fileName = URLUtil.guessFileName(url, contentDisposition, mimetype)
+
+            // Sanitize filename by replacing invalid characters with "_"
+            fileName = fileName.replace(invalidCharRegex, "_")
+
             val downloadMessage = "Downloading $fileName"
 
             //Attempt to add cookie, if it exists
@@ -201,6 +207,7 @@ class RNCWebViewManagerImpl {
                     }
                 }
             webChromeClient.setAllowsProtectedMedia(mAllowsProtectedMedia);
+            webChromeClient.setHasOnOpenWindowEvent(mHasOnOpenWindowEvent);
             webView.webChromeClient = webChromeClient
         } else {
             var webChromeClient = webView.webChromeClient as RNCWebChromeClient?
@@ -211,6 +218,7 @@ class RNCWebViewManagerImpl {
                 }
             }
             webChromeClient.setAllowsProtectedMedia(mAllowsProtectedMedia);
+            webChromeClient.setHasOnOpenWindowEvent(mHasOnOpenWindowEvent);
             webView.webChromeClient = webChromeClient
         }
     }
@@ -577,6 +585,11 @@ class RNCWebViewManagerImpl {
         mLackPermissionToDownloadMessage = value
     }
 
+    fun setHasOnOpenWindowEvent(view: RNCWebView, value: Boolean) {
+        mHasOnOpenWindowEvent = value
+        setupWebChromeClient(view)
+    }
+
     fun setMinimumFontSize(view: RNCWebView, value: Int) {
         view.settings.minimumFontSize = value
     }
@@ -592,6 +605,10 @@ class RNCWebViewManagerImpl {
           client.setAllowsProtectedMedia(enabled)
         }
       }
+    }
+
+    fun setMenuCustomItems(view: RNCWebView, value: ReadableArray) {
+        view.setMenuCustomItems(value.toArrayList() as List<Map<String, String>>)
     }
 
     fun setNestedScrollEnabled(view: RNCWebView, value: Boolean) {
@@ -635,5 +652,9 @@ class RNCWebViewManagerImpl {
 
     fun setThirdPartyCookiesEnabled(view: RNCWebView, enabled: Boolean) {
         CookieManager.getInstance().setAcceptThirdPartyCookies(view, enabled)
+    }
+
+    fun setWebviewDebuggingEnabled(view: RNCWebView, enabled: Boolean) {
+        RNCWebView.setWebContentsDebuggingEnabled(enabled)
     }
 }

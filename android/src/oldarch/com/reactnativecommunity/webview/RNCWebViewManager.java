@@ -12,16 +12,19 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.views.scroll.ScrollEventType;
+import com.reactnativecommunity.webview.events.TopCustomMenuSelectionEvent;
 import com.reactnativecommunity.webview.events.TopHttpErrorEvent;
 import com.reactnativecommunity.webview.events.TopLoadingErrorEvent;
 import com.reactnativecommunity.webview.events.TopLoadingFinishEvent;
 import com.reactnativecommunity.webview.events.TopLoadingProgressEvent;
 import com.reactnativecommunity.webview.events.TopLoadingStartEvent;
 import com.reactnativecommunity.webview.events.TopMessageEvent;
+import com.reactnativecommunity.webview.events.TopOpenWindowEvent;
 import com.reactnativecommunity.webview.events.TopRenderProcessGoneEvent;
 import com.reactnativecommunity.webview.events.TopShouldStartLoadWithRequestEvent;
 
 import android.graphics.Color;
+import android.webkit.WebChromeClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -169,6 +172,11 @@ public class RNCWebViewManager extends SimpleViewManager<RNCWebView> {
         mRNCWebViewManagerImpl.setLackPermissionToDownloadMessage(value);
     }
 
+    @ReactProp(name = "hasOnOpenWindowEvent")
+    public void setHasOnOpenWindowEvent(RNCWebView view, boolean hasEvent) {
+        mRNCWebViewManagerImpl.setHasOnOpenWindowEvent(view, hasEvent);
+    }
+
     @ReactProp(name = "mediaPlaybackRequiresUserAction")
     public void setMediaPlaybackRequiresUserAction(RNCWebView view, boolean value) {
         mRNCWebViewManagerImpl.setMediaPlaybackRequiresUserAction(view, value);
@@ -177,6 +185,11 @@ public class RNCWebViewManager extends SimpleViewManager<RNCWebView> {
     @ReactProp(name = "messagingEnabled")
     public void setMessagingEnabled(RNCWebView view, boolean value) {
         mRNCWebViewManagerImpl.setMessagingEnabled(view, value);
+    }
+
+    @ReactProp(name = "menuItems")
+    public void setMenuCustomItems(RNCWebView view, @Nullable ReadableArray items) {
+        mRNCWebViewManagerImpl.setMenuCustomItems(view, items);
     }
 
     @ReactProp(name = "messagingModuleName")
@@ -254,6 +267,11 @@ public class RNCWebViewManager extends SimpleViewManager<RNCWebView> {
         mRNCWebViewManagerImpl.setThirdPartyCookiesEnabled(view, value);
     }
 
+    @ReactProp(name = "webviewDebuggingEnabled")
+    public void setWebviewDebuggingEnabled(RNCWebView view, boolean value) {
+        mRNCWebViewManagerImpl.setWebviewDebuggingEnabled(view, value);
+    }
+
     @ReactProp(name = "userAgent")
     public void setUserAgent(RNCWebView view, @Nullable String value) {
         mRNCWebViewManagerImpl.setUserAgent(view, value);
@@ -283,6 +301,8 @@ public class RNCWebViewManager extends SimpleViewManager<RNCWebView> {
         export.put(ScrollEventType.getJSEventName(ScrollEventType.SCROLL), MapBuilder.of("registrationName", "onScroll"));
         export.put(TopHttpErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onHttpError"));
         export.put(TopRenderProcessGoneEvent.EVENT_NAME, MapBuilder.of("registrationName", "onRenderProcessGone"));
+        export.put(TopCustomMenuSelectionEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCustomMenuSelection"));
+        export.put(TopOpenWindowEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOpenWindow"));
         return export;
     }
 

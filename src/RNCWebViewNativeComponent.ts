@@ -25,6 +25,9 @@ export type WebViewMessageEvent = Readonly<{
   lockIdentifier: Double;
   data: string;
 }>
+export type WebViewOpenWindowEvent = Readonly<{
+  targetUrl: string;
+}>
 export type WebViewHttpErrorEvent = Readonly<{
   url: string;
   loading: boolean;
@@ -206,6 +209,7 @@ export interface NativeProps extends ViewProps {
   menuItems?: ReadonlyArray<Readonly<{label: string, key: string}>>;
   // Workaround to watch if listener if defined
   hasOnFileDownload?: boolean;
+  fraudulentWebsiteWarningEnabled?: boolean;
   // !iOS only
 
   allowFileAccessFromFileURLs?: boolean;
@@ -223,6 +227,7 @@ export interface NativeProps extends ViewProps {
   injectedJavaScriptBeforeContentLoadedForMainFrameOnly?: boolean;
   javaScriptCanOpenWindowsAutomatically?: boolean;
   javaScriptEnabled?: boolean;
+  webviewDebuggingEnabled?: boolean;
   mediaPlaybackRequiresUserAction?: boolean;
   messagingEnabled: boolean;
   onLoadingError: DirectEventHandler<WebViewErrorEvent>;
@@ -231,6 +236,8 @@ export interface NativeProps extends ViewProps {
   onLoadingStart: DirectEventHandler<WebViewNavigationEvent>;
   onHttpError: DirectEventHandler<WebViewHttpErrorEvent>;
   onMessage: DirectEventHandler<WebViewMessageEvent>;
+  onOpenWindow?: DirectEventHandler<WebViewOpenWindowEvent>;
+  hasOnOpenWindowEvent?: boolean;
   onScroll?: DirectEventHandler<ScrollEvent>;
   onShouldStartLoadWithRequest: DirectEventHandler<ShouldStartLoadRequestEvent>;
   showsHorizontalScrollIndicator?: boolean;
