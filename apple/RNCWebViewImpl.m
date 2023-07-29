@@ -283,7 +283,6 @@ RCTAutoInsetsProtocol>
 
     menuController.menuItems = menuControllerItems;
     [menuController setMenuVisible:NO animated:YES];
-  }
 }
 
 #endif // !TARGET_OS_OSX
