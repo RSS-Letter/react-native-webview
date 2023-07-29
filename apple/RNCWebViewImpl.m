@@ -91,6 +91,15 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
 @end
 @implementation RNCWKWebView
 #if !TARGET_OS_OSX
+- (void)evaluateJS:(NSString *)js
+{
+  [self evaluateJavaScript: js completionHandler: ^(id result, NSError *error) {
+    if (error != nil) {
+      RCTLogWarn(@"%@", [NSString stringWithFormat:@"Error evaluating injectedJavaScript: This is possibly due to an unsupported return type. Try adding true to the end of your injectedJavaScript string. %@", error]);
+    }
+  }];
+}
+
 - (BOOL)canPerformAction:(SEL)action
               withSender:(id)sender{
 
