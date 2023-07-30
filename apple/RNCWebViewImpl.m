@@ -26,42 +26,6 @@ static NSDictionary* customCertificatesForHost;
 NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
 
 #if !TARGET_OS_OSX
-@interface RNCWKWebView_ : WKWebView
-@property (nonatomic, copy) NSArray<NSDictionary *> * _Nullable menuItems;
-@end
-@implementation RNCWKWebView_
-- (void)evaluateJS:(NSString *)js
-{
-  [self evaluateJavaScript: js completionHandler: ^(id result, NSError *error) {
-    if (error != nil) {
-      RCTLogWarn(@"%@", [NSString stringWithFormat:@"Error evaluating injectedJavaScript: This is possibly due to an unsupported return type. Try adding true to the end of your injectedJavaScript string. %@", error]);
-    }
-  }];
-}
-
- - (BOOL)canPerformAction:(SEL)action
-               withSender:(id)sender {
-
-//   if (!self.menuItems) {
-//     return YES;
-//   }
-   return NO;
- }
-
- - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder API_AVAILABLE(ios(13.0))  {
-//      if (@available(iOS 16.0, *)) {
-//        if(self.menuItems) {
-//          [builder removeMenuForIdentifier:UIMenuLookup];
-//        }
-//      }
-//      [super buildMenuWithBuilder:builder];
-
-     
-     char const* cString = "window.dispatchEvent(new Event('contextmenuios'));";
-     [self evaluateJS: @(cString)];
- }
-@end
-
 // runtime trick to remove WKWebView keyboard default toolbar
 // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
 @interface _SwizzleHelperWK : UIView
@@ -91,15 +55,6 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
 @end
 @implementation RNCWKWebView
 #if !TARGET_OS_OSX
-- (void)evaluateJS:(NSString *)js
-{
-  [self evaluateJavaScript: js completionHandler: ^(id result, NSError *error) {
-    if (error != nil) {
-      RCTLogWarn(@"%@", [NSString stringWithFormat:@"Error evaluating injectedJavaScript: This is possibly due to an unsupported return type. Try adding true to the end of your injectedJavaScript string. %@", error]);
-    }
-  }];
-}
-
 - (BOOL)canPerformAction:(SEL)action
               withSender:(id)sender{
 
@@ -115,9 +70,8 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
 //        [builder removeMenuForIdentifier:UIMenuLookup];
 //      }
 //    }
-//
 //    [super buildMenuWithBuilder:builder];
-    
+
     [builder removeMenuForIdentifier:UIMenuLookup];
     [builder removeMenuForIdentifier:UIMenuSpeech];
     [builder removeMenuForIdentifier:UIMenuEdit];
@@ -128,9 +82,12 @@ NSString *const CUSTOM_SELECTOR = @"_CUSTOM_SELECTOR_";
     [builder removeMenuForIdentifier:UIMenuShare];
     [builder removeMenuForIdentifier:UIMenuUndoRedo];
     [builder removeMenuForIdentifier:UIMenuPrint];
-    
-     char const* cString = "window.dispatchEvent(new Event('contextmenuios'));";
-     [self evaluateJS: @(cString)];
+
+    char const* cString = "window.dispatchEvent(new Event('contextmenuios'));";
+//    [self evaluateJS: @(cString)];
+    [super evaluateJavaScript: @(cString) completionHandler:^(id _Nullable response, NSError * _Nullable error) {
+        // do nothing
+    }];
 }
 #else // TARGET_OS_OSX
 - (void)scrollWheel:(NSEvent *)theEvent {
@@ -292,11 +249,11 @@ RCTAutoInsetsProtocol>
       NSString *sel = [NSString stringWithFormat:@"%@%@", CUSTOM_SELECTOR, menuItemKey];
       UIMenuItem *item = [[UIMenuItem alloc] initWithTitle: menuItemLabel
                                                     action: NSSelectorFromString(sel)];
-      //      [menuControllerItems addObject: item];
+      [menuControllerItems addObject: item];
     }
 
     menuController.menuItems = menuControllerItems;
-    [menuController setMenuVisible:NO animated:YES];
+    [menuController setMenuVisible:YES animated:YES];
 }
 
 #endif // !TARGET_OS_OSX
@@ -513,7 +470,6 @@ RCTAutoInsetsProtocol>
 #if !TARGET_OS_OSX
     _webView.menuItems = _menuItems;
     _webView.scrollView.delegate = self;
-    _webView.menuItems = self.menuItems;
 #endif // !TARGET_OS_OSX
     _webView.UIDelegate = self;
     _webView.navigationDelegate = self;
