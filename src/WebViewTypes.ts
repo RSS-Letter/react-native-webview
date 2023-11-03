@@ -21,9 +21,10 @@ type WebViewCommands =
   | 'postMessage'
   | 'injectJavaScript'
   | 'loadUrl'
-  | 'requestFocus';
+  | 'requestFocus'
+  | 'clearCache';
 
-type AndroidWebViewCommands = 'clearHistory' | 'clearCache' | 'clearFormData';
+type AndroidWebViewCommands = 'clearHistory' | 'clearFormData';
 
 interface RNCWebViewUIManager<Commands extends string> extends UIManagerStatic {
   getViewManagerConfig: (name: string) => {
@@ -235,6 +236,20 @@ export interface WebViewCustomMenuItems {
    */
   label: string;
 }
+
+export declare type SuppressMenuItem = 
+  | "cut"
+  | "copy"
+  | "paste"
+  | "replace"
+  | "bold"
+  | "italic"
+  | "underline"
+  | "select"
+  | "selectAll"
+  | "translate"
+  | "lookup"
+  | "share";
 
 export type WebViewSource = WebViewSourceUri | WebViewSourceHtml;
 
@@ -677,18 +692,24 @@ export interface IOSWebViewProps extends WebViewSharedProps {
   enableApplePay?: boolean;
 
   /**
-   * An array of objects which will be added to the UIMenu controller when selecting text.
+   * An array of objects which will be shown when selecting text. An empty array will suppress the menu.
    * These will appear after a long press to select text.
-   * @platform ios
+   * @platform ios, android
    */
   menuItems?: WebViewCustomMenuItems[];
+
+  /**
+   * An array of strings which will be suppressed from the menu.
+   * @platform ios
+   */
+  suppressMenuItems?: SuppressMenuItem[];
 
   /**
    * The function fired when selecting a custom menu item created by `menuItems`.
    * It passes a WebViewEvent with a `nativeEvent`, where custom keys are passed:
    * `customMenuKey`: the string of the menu item
    * `selectedText`: the text selected on the document
-   * @platform ios
+   * @platform ios, android
    */
   onCustomMenuSelection?: (event: {nativeEvent: {
     label: string;
@@ -1254,6 +1275,11 @@ export interface WebViewSharedProps extends ViewProps {
    */
   basicAuthCredential?: BasicAuthCredential;
 
+  /**
+   * Inject a JavaScript object to be accessed as a JSON string via JavaScript in the WebView.
+   */
+  injectedJavaScriptObject?: object;
+  
   /**
    * Enables WebView remote debugging using Chrome (Android) or Safari (iOS).
    */
