@@ -152,6 +152,8 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
         return super.startActionMode(callback, type);
       }
 
+      evaluateJavascriptWithFallback("(function() { window.dispatchEvent(new Event('contextmenuios')); })();");
+
       return super.startActionMode(new ActionMode.Callback2() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
